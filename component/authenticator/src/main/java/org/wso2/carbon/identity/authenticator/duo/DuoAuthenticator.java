@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, WSO2 LLC. (http://www.wso2.com).
+ * Copyright (c) 2023-2024, WSO2 LLC. (http://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -92,7 +92,7 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         } else if (StringUtils.isNotEmpty(duoUserId)) {
             try {
                 String redirectUri = getCallbackUrl() + "?" +
-                        FrameworkConstants.SESSION_DATA_KEY + "=" + getContextIdentifier(request);
+                        FrameworkConstants.SESSION_DATA_KEY + "=" + context.getContextIdentifier();
 
                 // Step 1: Create Duo Client
                 duoClient = new Client.Builder(authenticatorProperties.get
@@ -296,7 +296,13 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
 
         String queryParams = FrameworkUtils.getQueryStringWithFrameworkContextId(context.getQueryParams(),
                 context.getCallerSessionKey(), context.getContextIdentifier());
-        String duoErrorPageUrl = DuoAuthenticatorConstants.DUO_ERROR_PAGE + "?" + queryParams + "&" +
+        Map<String, String> duoParameters = getAuthenticatorConfig().getParameterMap();
+        String duoErrorPageEndpoint = duoParameters.get(
+                DuoAuthenticatorConstants.DUO_AUTHENTICATION_ENDPOINT_ERROR_PAGE);
+        if (duoErrorPageEndpoint == null) {
+            duoErrorPageEndpoint = DuoAuthenticatorConstants.DUO_DEFAULT_ERROR_PAGE;
+        }
+        String duoErrorPageUrl = duoErrorPageEndpoint + "?" + queryParams + "&" +
                 DuoAuthenticatorConstants.AUTHENTICATION + "=" + getName();
         return IdentityUtil.getServerURL(duoErrorPageUrl, false, false);
     }
