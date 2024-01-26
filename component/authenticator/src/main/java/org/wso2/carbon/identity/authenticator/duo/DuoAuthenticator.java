@@ -48,7 +48,6 @@ import org.wso2.carbon.identity.core.util.IdentityUtil;
 import org.wso2.carbon.user.api.UserRealm;
 import org.wso2.carbon.user.api.UserStoreException;
 import org.wso2.carbon.user.core.UserStoreManager;
-import org.wso2.carbon.user.core.util.UserCoreUtil;
 import org.wso2.carbon.utils.multitenancy.MultitenantUtils;
 
 import java.io.IOException;
@@ -498,24 +497,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
         adminSecretKey.setConfidential(true);
         adminSecretKey.setDisplayOrder(5);
         configProperties.add(adminSecretKey);
-
-        Property disableUserStoreDomain = new Property();
-        disableUserStoreDomain.setName(DuoAuthenticatorConstants.USER_STORE_DOMAIN);
-        disableUserStoreDomain.setDisplayName("Disable User Store Domain");
-        disableUserStoreDomain.setRequired(false);
-        disableUserStoreDomain.setDescription("Configured as true to disable user store domain");
-        disableUserStoreDomain.setValue("true");
-        disableUserStoreDomain.setDisplayOrder(6);
-        configProperties.add(disableUserStoreDomain);
-
-        Property disableTenantDomain = new Property();
-        disableTenantDomain.setName(DuoAuthenticatorConstants.TENANT_DOMAIN);
-        disableTenantDomain.setDisplayName("Disable Tenant Domain");
-        disableTenantDomain.setRequired(false);
-        disableTenantDomain.setDescription("Configured as true to disable tenant domain");
-        disableTenantDomain.setValue("true");
-        disableTenantDomain.setDisplayOrder(7);
-        configProperties.add(disableTenantDomain);
 
         return configProperties;
     }
