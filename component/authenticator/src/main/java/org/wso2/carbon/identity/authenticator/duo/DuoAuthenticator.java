@@ -34,6 +34,7 @@ import org.wso2.carbon.identity.application.authentication.framework.AbstractApp
 import org.wso2.carbon.identity.application.authentication.framework.FederatedApplicationAuthenticator;
 import org.wso2.carbon.identity.application.authentication.framework.context.AuthenticationContext;
 import org.wso2.carbon.identity.application.authentication.framework.exception.AuthenticationFailedException;
+import org.wso2.carbon.identity.application.authentication.framework.exception.UserIdNotFoundException;
 import org.wso2.carbon.identity.application.authentication.framework.model.AuthenticatedUser;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkConstants;
 import org.wso2.carbon.identity.application.authentication.framework.util.FrameworkUtils;
@@ -125,27 +126,6 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
     private String getCallbackUrl() throws URLBuilderException {
 
         return ServiceURLBuilder.create().addPath(FrameworkConstants.COMMONAUTH).build().getAbsolutePublicURL();
-    }
-    /**
-     * Check if the tenant domain should be appended or not.
-     *
-     * @param authenticatorProperties the authenticator properties
-     * @return True if the tenant domain should not be appended.
-     */
-    private boolean isDisableTenantDomainInUserName(Map<String, String> authenticatorProperties) {
-
-        return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.TENANT_DOMAIN));
-    }
-
-    /**
-     * Check if the user store domain should be appended or not.
-     *
-     * @param authenticatorProperties the authenticator properties
-     * @return True if the user store domain should not be appended.
-     */
-    private boolean isDisableUserStoreDomainInUserName(Map<String, String> authenticatorProperties) {
-
-        return Boolean.parseBoolean(authenticatorProperties.get(DuoAuthenticatorConstants.USER_STORE_DOMAIN));
     }
 
     /**
@@ -437,40 +417,38 @@ public class DuoAuthenticator extends AbstractApplicationAuthenticator implement
                 return duoUserId;
             }
         }
-        String username = getUsername(context);
 
-        return username;
+        return getUserId(context);
     }
 
     /**
-     * Extract the mobile number value from federated user attributes.
+     * Get the user ID of the authenticating user.
      *
      * @param context         {@link AuthenticationContext}
      */
-    private String getUsername(AuthenticationContext context) throws AuthenticationFailedException {
+    private String getUserId(AuthenticationContext context) throws AuthenticationFailedException {
 
-        String username = String.valueOf(context.getProperty(DuoAuthenticatorConstants.DUO_USERNAME));
-        Map<String, String> authenticatorProperties = context.getAuthenticatorProperties();
+        String userId = null;
         AuthenticatedUser authenticatedUser = (AuthenticatedUser) context
                 .getProperty(DuoAuthenticatorConstants.AUTHENTICATED_USER);
 
         if (authenticatedUser != null) {
-            username = authenticatedUser.getUserName();
+            try {
+                userId = authenticatedUser.getUserId();
+            } catch (UserIdNotFoundException e) {
+                throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
+                        "identifying the user");
+            }
         }
 
-        if (username == null) {
+        if (userId == null) {
             throw new AuthenticationFailedException("Authentication failed!. Cannot proceed further without " +
                     "identifying the user");
         }
-        if (!isDisableTenantDomainInUserName(authenticatorProperties)) {
-            username = UserCoreUtil.addTenantDomainToEntry(username, authenticatedUser.getTenantDomain());
-        }
-        if (!isDisableUserStoreDomainInUserName(authenticatorProperties)) {
-            username = IdentityUtil.addDomainToName(username, authenticatedUser.getUserStoreDomain());
-        }
 
-        return username;
+        return userId;
     }
+
     /**
      * Get the configuration properties of UI.
      */
