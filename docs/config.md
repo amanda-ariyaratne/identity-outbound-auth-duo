@@ -160,7 +160,6 @@ Now you have to configure WSO2 Identity Server by adding adding it as a new conn
 
    ![alt text](images/duo-settings.png)
 7. If you are migrating to IS 7.0.0 from a previous version, make sure the values set for **Disable User Store** and **Disable Tenant Domain** are correct.
-   >> NOTE :  Disable User Store Domain and Disable Tenant Domain are optional configurations. If you want to strip off both user store domain and tenant domain from user name, configure both as true. Otherwise, keep the fields empty.
 
 
 ### Deploying the sample React SPA
